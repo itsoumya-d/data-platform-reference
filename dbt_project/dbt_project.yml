@@ -1,0 +1,14 @@
+name: dataplat
+version: "1.0.0"
+config-version: 2
+profile: dataplat
+model-paths: ["models"]
+macro-paths: ["macros"]
+models:
+  dataplat:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+vars:
+  raw_dir: "../data/raw"

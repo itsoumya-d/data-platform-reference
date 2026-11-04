@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.coverage
+data/
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+terraform/.terraform/
+terraform/*.tfstate*
+terraform/.terraform.lock.hcl
+.DS_Store
+
+.venv-*/
+*.egg-info/
+dbt_project/.user.yml
