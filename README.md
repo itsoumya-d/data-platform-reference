@@ -93,6 +93,23 @@ The banking slice is validated by 26 pytest tests and `dbt build` (45 nodes:
 10 table models, 5 views and 30 data tests) on DuckDB. Snowflake, ADF and
 AtScale remain adapters/contracts, not live external services.
 
+
+## Fonterra finance data product extension
+
+The repo also includes a Databricks-shaped finance data-product slice:
+
+- `src/dataplat/fonterra_finance.py` — source-to-target mapping, supplier and
+  account dimensions, invoice fact, reconciliation, validation, lineage and
+  finance metrics.
+- `databricks/fonterra_finance_models.sql` — Delta gold dimensions, fact and a
+  GL-to-subledger reconciliation view.
+- `databricks/fonterra_finance_medallion.py` — PySpark bronze-to-silver-to-gold
+  notebook.
+- `tests/test_fonterra_finance.py` — 30 additional finance data-product tests.
+
+The slice is validated by pytest; Databricks SQL and PySpark remain portable
+contracts rather than a live workspace connection.
+
 ## Boundaries
 
 - `SnowflakeWarehouse.from_env()` reads credentials only from environment
