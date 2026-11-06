@@ -10,5 +10,7 @@ models:
       +materialized: view
     marts:
       +materialized: table
+    raw_vault:
+      +materialized: table
 vars:
   raw_dir: "../data/raw"

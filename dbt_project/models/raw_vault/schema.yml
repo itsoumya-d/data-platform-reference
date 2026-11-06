@@ -1,0 +1,49 @@
+version: 2
+
+models:
+  - name: hub_customer
+    columns:
+      - name: customer_hk
+        tests: [not_null, unique]
+      - name: customer_id
+        tests: [not_null, unique]
+  - name: hub_account
+    columns:
+      - name: account_hk
+        tests: [not_null, unique]
+      - name: account_id
+        tests: [not_null, unique]
+  - name: link_customer_account
+    columns:
+      - name: customer_account_hk
+        tests: [not_null, unique]
+      - name: customer_hk
+        tests: [not_null]
+      - name: account_hk
+        tests: [not_null]
+  - name: sat_customer_profile
+    columns:
+      - name: customer_hk
+        tests: [not_null]
+      - name: hashdiff
+        tests: [not_null]
+  - name: sat_account_balance
+    columns:
+      - name: account_hk
+        tests: [not_null]
+      - name: hashdiff
+        tests: [not_null]
+  - name: fct_daily_balance
+    columns:
+      - name: balance_date
+        tests: [not_null]
+      - name: account_id
+        tests: [not_null]
+  - name: dim_account
+    columns:
+      - name: account_id
+        tests: [not_null, unique]
+  - name: mart_deposit_lending
+    columns:
+      - name: book
+        tests: [not_null, unique]

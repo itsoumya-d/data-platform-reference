@@ -13,6 +13,9 @@ REGIONS = ("Auckland", "Wellington", "Christchurch", "Hamilton", "Dunedin")
 SEGMENTS = ("smb", "mid-market", "enterprise")
 STATUSES = ("paid", "paid", "paid", "paid", "paid", "paid", "paid", "refunded", "failed")
 EVENT_TYPES = ("created", "authorised", "captured", "refunded")
+ACCOUNT_TYPES = ("transaction", "savings", "loan")
+BANKS = ("NZ", "AU")
+TX_CATEGORIES = ("salary", "card", "transfer", "interest", "loan_repayment", "merchant")
 END = datetime(2026, 11, 4, tzinfo=timezone.utc)
 
 
@@ -65,14 +68,53 @@ def generate(out_dir: str | Path, rows: int = 5000, seed: int = 42) -> dict[str,
             )
     events = pd.DataFrame(event_rows)
 
+    account_count = 700
+    accounts = pd.DataFrame(
+        {
+            "account_id": [f"A{i:06d}" for i in range(1, account_count + 1)],
+            "customer_id": rng.choice(customer_ids, size=account_count),
+            "account_type": rng.choice(ACCOUNT_TYPES, size=account_count, p=(0.5, 0.35, 0.15)),
+            "currency": rng.choice(("NZD", "AUD"), size=account_count, p=(0.85, 0.15)),
+            "bank": rng.choice(BANKS, size=account_count, p=(0.8, 0.2)),
+            "opened_date": [
+                (END - timedelta(days=int(d))).date().isoformat()
+                for d in rng.integers(30, 4000, size=account_count)
+            ],
+            "status": rng.choice(("active", "active", "active", "closed"), size=account_count),
+            "balance_nzd": np.round(rng.lognormal(mean=8.2, sigma=1.1, size=account_count), 2),
+            "updated_at": [END - timedelta(minutes=int(m)) for m in rng.integers(0, 60 * 24 * 5, size=account_count)],
+        }
+    )
+
+    tx_count = max(1200, min(rows, 5000))
+    transaction_rows = []
+    account_ids = accounts["account_id"].to_numpy()
+    for i in range(1, tx_count + 1):
+        transaction_rows.append(
+            {
+                "transaction_id": f"T{i:08d}",
+                "account_id": rng.choice(account_ids),
+                "transaction_ts": END - timedelta(minutes=int(rng.integers(0, 60 * 24 * 45))),
+                "amount_nzd": float(np.round(rng.lognormal(mean=4.2, sigma=1.0), 2)),
+                "direction": rng.choice(("credit", "debit"), p=(0.52, 0.48)),
+                "category": rng.choice(TX_CATEGORIES),
+                "status": rng.choice(("posted", "posted", "posted", "pending")),
+            }
+        )
+    transactions = pd.DataFrame(transaction_rows)
+
     paths = {
         "orders": out / "orders.parquet",
         "customers": out / "customers.parquet",
         "events": out / "events.parquet",
+        "accounts": out / "accounts.parquet",
+        "transactions": out / "transactions.parquet",
     }
     orders.to_parquet(paths["orders"], index=False)
     customers.to_parquet(paths["customers"], index=False)
     events.to_parquet(paths["events"], index=False)
+    accounts.to_parquet(paths["accounts"], index=False)
+    transactions.to_parquet(paths["transactions"], index=False)
     return paths
 
 

@@ -1,0 +1,18 @@
+{
+  "model": "heartland_banking",
+  "description": "AtScale-style semantic contract for Heartland NZ/AU deposit, lending and regulatory analytics.",
+  "dimensions": [
+    {"name": "balance_date", "type": "date"},
+    {"name": "bank", "type": "string"},
+    {"name": "account_type", "type": "string"},
+    {"name": "customer_segment", "type": "string"}
+  ],
+  "metrics": [
+    {"name": "total_deposits_nzd", "expression": "sum(balance_nzd)", "filter": "account_type != 'loan'"},
+    {"name": "total_lending_nzd", "expression": "sum(balance_nzd)", "filter": "account_type = 'loan'"},
+    {"name": "net_daily_flow_nzd", "expression": "sum(net_flow_nzd)"},
+    {"name": "active_accounts", "expression": "count(distinct account_id)", "filter": "status = 'active'"},
+    {"name": "cet1_ratio", "expression": "cet1_capital / risk_weighted_assets"},
+    {"name": "liquidity_coverage_ratio", "expression": "high_quality_liquid_assets / net_cash_outflows"}
+  ]
+}

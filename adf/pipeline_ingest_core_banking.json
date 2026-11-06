@@ -1,0 +1,37 @@
+{
+  "name": "pl_ingest_core_banking",
+  "properties": {
+    "description": "Ingest Heartland core-banking accounts and transactions into the raw zone for Snowflake and dbt Data Vault processing.",
+    "parameters": {
+      "sourceContainer": {"type": "string", "defaultValue": "core-banking"},
+      "sinkContainer": {"type": "string", "defaultValue": "raw"},
+      "runDate": {"type": "string", "defaultValue": "@utcnow('yyyy-MM-dd')"}
+    },
+    "activities": [
+      {
+        "name": "CopyAccounts",
+        "type": "Copy",
+        "inputs": [{"referenceName": "ds_core_banking_parquet", "type": "DatasetReference"}],
+        "outputs": [{"referenceName": "ds_raw_parquet", "type": "DatasetReference"}],
+        "typeProperties": {
+          "source": {"type": "ParquetSource", "storeSettings": {"type": "AzureBlobStorageReadSettings", "recursive": true}},
+          "sink": {"type": "ParquetSink", "storeSettings": {"type": "AzureBlobStorageWriteSettings"}},
+          "enableStaging": false
+        }
+      },
+      {
+        "name": "CopyTransactions",
+        "type": "Copy",
+        "dependsOn": [{"activity": "CopyAccounts", "dependencyConditions": ["Succeeded"]}],
+        "inputs": [{"referenceName": "ds_core_banking_parquet", "type": "DatasetReference"}],
+        "outputs": [{"referenceName": "ds_raw_parquet", "type": "DatasetReference"}],
+        "typeProperties": {
+          "source": {"type": "ParquetSource", "storeSettings": {"type": "AzureBlobStorageReadSettings", "recursive": true}},
+          "sink": {"type": "ParquetSink", "storeSettings": {"type": "AzureBlobStorageWriteSettings"}},
+          "enableStaging": false
+        }
+      }
+    ],
+    "annotations": ["heartland", "data-vault", "azure-data-factory", "snowflake"]
+  }
+}

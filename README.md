@@ -72,6 +72,27 @@ pip install -e ".[snowflake]" # snowflake-connector-python
 pip install -e ".[airflow]"   # Airflow DAG parsing
 ```
 
+
+## Heartland banking Data Vault extension
+
+This repo also carries a Heartland-shaped NZ/AU banking slice:
+
+- `adf/pipeline_ingest_core_banking.json` — parameterised Azure Data Factory
+  copy pipeline for core-banking accounts and transactions.
+- `dbt_project/models/raw_vault/` — Data Vault 2.0 hubs, link and satellites
+  for customers and accounts, with not-null and uniqueness data tests.
+- `dbt_project/models/marts/fct_daily_balance.sql`,
+  `dim_account.sql` and `mart_deposit_lending.sql` — finance and regulatory
+  reporting marts.
+- `semantic/heartland_metrics.json` — AtScale-style semantic metrics for
+  deposits, lending, daily flow, CET1 and liquidity coverage.
+- `src/dataplat/heartland.py` — pure hash keys, daily net-flow aggregation,
+  deposit/lending split and regulatory ratios.
+
+The banking slice is validated by 26 pytest tests and `dbt build` (45 nodes:
+10 table models, 5 views and 30 data tests) on DuckDB. Snowflake, ADF and
+AtScale remain adapters/contracts, not live external services.
+
 ## Boundaries
 
 - `SnowflakeWarehouse.from_env()` reads credentials only from environment
