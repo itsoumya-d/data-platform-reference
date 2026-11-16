@@ -110,6 +110,15 @@ The repo also includes a Databricks-shaped finance data-product slice:
 The slice is validated by pytest; Databricks SQL and PySpark remain portable
 contracts rather than a live workspace connection.
 
+### Woolworths Group New Zealand (wiqNZ) Retail Data Science Engine
+
+- `src/dataplat/woolworths_retail_ds.py` — Production-grade retail data science engine:
+  - `RetailDemandForecastingEngine`: Statistical time-series demand forecasting with dynamic service level safety stock and fresh food shrinkage/waste risk scoring.
+  - `EverydayRewardsSegmentation`: Multi-tier RFM loyalty clustering with propensity recommendations and digital app engagement routing.
+  - `MultiCloudRetailETLPipeline`: Python and SQL extraction/transformation pipelines across Google Cloud Platform (BigQuery) and Microsoft Azure.
+  - `ResponsibleAIGovernance`: PII masking with SHA-256 salting and pricing fairness audit safeguards.
+- `tests/test_woolworths_retail_ds.py` — 10 unit tests verifying demand forecasting, promotional lift, shrinkage detection, customer segmentation, multi-cloud SQL generation, and AI ethics.
+
 ## Boundaries
 
 - `SnowflakeWarehouse.from_env()` reads credentials only from environment
