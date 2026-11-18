@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set, Tuple
+from datetime import UTC, datetime
+from typing import Any
 
 
 class ChangeSeverity(enum.Enum):
@@ -43,16 +43,16 @@ class SchemaSnapshot:
     system_name: str
     entity_name: str
     version: str
-    columns: Dict[str, ColumnDefinition]
-    captured_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    columns: dict[str, ColumnDefinition]
+    captured_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 @dataclass
 class SchemaChange:
     change_type: str  # ADDED, REMOVED, TYPE_CHANGED, NULLABILITY_CHANGED
     column_name: str
-    old_value: Optional[str]
-    new_value: Optional[str]
+    old_value: str | None
+    new_value: str | None
     severity: ChangeSeverity
     is_cde_affected: bool
 
@@ -62,9 +62,9 @@ class LineageNode:
     node_id: str
     stage: LifecycleStage
     entity_name: str
-    columns: List[str]
+    columns: list[str]
     is_regulatory_target: bool = False
-    regulatory_framework: Optional[str] = None  # e.g., "RBNZ_BS11", "BCBS_239"
+    regulatory_framework: str | None = None  # e.g., "RBNZ_BS11", "BCBS_239"
 
 
 @dataclass
@@ -83,8 +83,8 @@ class SchemaDriftDetector:
     """Detects structural and semantic schema changes between source system releases."""
 
     @staticmethod
-    def compare_schemas(old: SchemaSnapshot, new: SchemaSnapshot) -> List[SchemaChange]:
-        changes: List[SchemaChange] = []
+    def compare_schemas(old: SchemaSnapshot, new: SchemaSnapshot) -> list[SchemaChange]:
+        changes: list[SchemaChange] = []
         old_cols = old.columns
         new_cols = new.columns
 
@@ -144,8 +144,8 @@ class DataLineageGraph:
     """Directed graph representing end-to-end data flows from core banking sources to regulatory marts."""
 
     def __init__(self):
-        self.nodes: Dict[str, LineageNode] = {}
-        self.edges: Dict[str, Set[str]] = {}  # source_id -> set of downstream_ids
+        self.nodes: dict[str, LineageNode] = {}
+        self.edges: dict[str, set[str]] = {}  # source_id -> set of downstream_ids
 
     def add_node(self, node: LineageNode) -> None:
         self.nodes[node.node_id] = node
@@ -157,14 +157,14 @@ class DataLineageGraph:
             raise ValueError(f"Both nodes {from_id} and {to_id} must exist before creating edge")
         self.edges[from_id].add(to_id)
 
-    def trace_downstream(self, start_node_id: str) -> List[LineageNode]:
+    def trace_downstream(self, start_node_id: str) -> list[LineageNode]:
         """Performs breadth-first traversal to discover all affected downstream consumers."""
         if start_node_id not in self.nodes:
             return []
 
-        visited: Set[str] = set()
-        queue: List[str] = [start_node_id]
-        downstream: List[LineageNode] = []
+        visited: set[str] = set()
+        queue: list[str] = [start_node_id]
+        downstream: list[LineageNode] = []
 
         while queue:
             curr = queue.pop(0)
@@ -176,7 +176,7 @@ class DataLineageGraph:
 
         return downstream
 
-    def get_impacted_regulatory_reports(self, start_node_id: str) -> List[LineageNode]:
+    def get_impacted_regulatory_reports(self, start_node_id: str) -> list[LineageNode]:
         """Identifies regulatory reporting artifacts (e.g. RBNZ BS11, APRA/BCBS 239) impacted by an upstream change."""
         all_downstream = self.trace_downstream(start_node_id)
         return [n for n in all_downstream if n.is_regulatory_target]
@@ -192,7 +192,7 @@ class ReconciliationRootCauseAnalyzer:
         mart_balance: float,
         report_balance: float,
         tolerance: float = 0.01
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         discrepancy = round(source_balance - report_balance, 4)
         if abs(discrepancy) <= tolerance:
             return {
@@ -250,7 +250,7 @@ class BNZDataLifecycleManager:
 
     def __init__(self, lineage_graph: DataLineageGraph):
         self.lineage_graph = lineage_graph
-        self.mappings: List[SourceToTargetMapping] = []
+        self.mappings: list[SourceToTargetMapping] = []
 
     def register_mapping(self, mapping: SourceToTargetMapping) -> None:
         self.mappings.append(mapping)
@@ -260,7 +260,7 @@ class BNZDataLifecycleManager:
         old_schema: SchemaSnapshot,
         new_schema: SchemaSnapshot,
         source_node_id: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Evaluates full release impact: schema drift, affected lineage, and regulatory exposures."""
         changes = SchemaDriftDetector.compare_schemas(old_schema, new_schema)
         downstream_nodes = self.lineage_graph.trace_downstream(source_node_id)

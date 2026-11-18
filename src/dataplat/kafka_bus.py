@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Protocol
 
 
@@ -15,7 +15,7 @@ def build_envelope(event_type: str, payload: dict[str, Any], key: str | None = N
         "schema_version": 1,
         "event_type": event_type,
         "key": key,
-        "occurred_at": datetime.now(timezone.utc).isoformat(),
+        "occurred_at": datetime.now(UTC).isoformat(),
         "payload": payload,
     }
 

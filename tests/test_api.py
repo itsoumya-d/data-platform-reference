@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pandas as pd
 from fastapi.testclient import TestClient
@@ -14,7 +14,7 @@ def test_api_health_metrics_and_insight(tmp_path):
             {
                 "order_id": "O0000001",
                 "customer_id": "C00001",
-                "order_ts": datetime(2026, 11, 1, tzinfo=timezone.utc),
+                "order_ts": datetime(2026, 11, 1, tzinfo=UTC),
                 "region": "Auckland",
                 "amount_nzd": 120.50,
                 "status": "paid",

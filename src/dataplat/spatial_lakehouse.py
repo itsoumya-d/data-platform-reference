@@ -10,7 +10,7 @@ import json
 import os
 import pathlib
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 @dataclasses.dataclass(frozen=True)
@@ -19,7 +19,7 @@ class CaptureRecord:
     sensor_type: str  # e.g., "egocentric_video", "lidar_pointcloud", "depth_map", "imu_telemetry"
     timestamp_ns: int
     data_payload: bytes
-    metadata: Dict[str, Any] = dataclasses.field(default_factory=dict)
+    metadata: dict[str, Any] = dataclasses.field(default_factory=dict)
 
     @property
     def content_hash(self) -> str:
@@ -38,17 +38,17 @@ class IngestStatus:
     file_path: str
     deduplicated: bool = False
     validation_passed: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
 
 @dataclasses.dataclass
 class IcebergSnapshot:
     snapshot_id: str
-    parent_snapshot_id: Optional[str]
+    parent_snapshot_id: str | None
     timestamp_ms: int
-    manifest_files: List[str]
+    manifest_files: list[str]
     total_records: int
-    partition_summary: Dict[str, int]
+    partition_summary: dict[str, int]
 
 
 @dataclasses.dataclass
@@ -61,11 +61,11 @@ class LakeFSBranch:
 @dataclasses.dataclass
 class LakeFSCommit:
     commit_id: str
-    parent_commit_id: Optional[str]
+    parent_commit_id: str | None
     branch: str
     message: str
     timestamp_ms: int
-    manifest: Dict[str, str]  # capture_id -> content_hash / object_key
+    manifest: dict[str, str]  # capture_id -> content_hash / object_key
 
 
 @dataclasses.dataclass
@@ -75,7 +75,7 @@ class TrainingShard:
     file_path: str
     sample_count: int
     total_bytes: int
-    sample_ids: List[str]
+    sample_ids: list[str]
 
 
 class MultimodalIngestPipeline:
@@ -86,7 +86,7 @@ class MultimodalIngestPipeline:
         self.bronze_dir = self.base_dir / "bronze"
         self.silver_dir = self.base_dir / "silver"
         self.gold_dir = self.base_dir / "gold"
-        self._seen_hashes: Dict[str, str] = {}  # hash -> file_path
+        self._seen_hashes: dict[str, str] = {}  # hash -> file_path
 
         for d in (self.bronze_dir, self.silver_dir, self.gold_dir):
             d.mkdir(parents=True, exist_ok=True)
@@ -129,7 +129,7 @@ class MultimodalIngestPipeline:
             validation_passed=True,
         )
 
-    def promote_to_silver(self, bronze_status: IngestStatus, calibrated_metadata: Dict[str, Any]) -> IngestStatus:
+    def promote_to_silver(self, bronze_status: IngestStatus, calibrated_metadata: dict[str, Any]) -> IngestStatus:
         if not bronze_status.validation_passed or not os.path.exists(bronze_status.file_path):
             raise ValueError(f"Cannot promote invalid or missing bronze file: {bronze_status}")
 
@@ -156,7 +156,7 @@ class MultimodalIngestPipeline:
             validation_passed=True,
         )
 
-    def promote_to_gold(self, silver_status: IngestStatus, feature_embeddings: List[float], labels: Dict[str, Any]) -> IngestStatus:
+    def promote_to_gold(self, silver_status: IngestStatus, feature_embeddings: list[float], labels: dict[str, Any]) -> IngestStatus:
         if not os.path.exists(silver_status.file_path):
             raise ValueError(f"Cannot promote missing silver file: {silver_status}")
 
@@ -190,10 +190,10 @@ class IcebergTableManager:
         self.table_name = table_name
         self.metadata_dir = pathlib.Path(base_metadata_dir) / table_name
         self.metadata_dir.mkdir(parents=True, exist_ok=True)
-        self.snapshots: List[IcebergSnapshot] = []
+        self.snapshots: list[IcebergSnapshot] = []
         self._current_records = 0
 
-    def create_snapshot(self, added_files: List[str], partition_counts: Dict[str, int]) -> IcebergSnapshot:
+    def create_snapshot(self, added_files: list[str], partition_counts: dict[str, int]) -> IcebergSnapshot:
         snap_id = hashlib.sha256(f"{self.table_name}_{len(self.snapshots)}_{time.time()}".encode()).hexdigest()[:16]
         parent_id = self.snapshots[-1].snapshot_id if self.snapshots else None
         record_count = sum(partition_counts.values())
@@ -229,10 +229,10 @@ class IcebergTableManager:
             encoding="utf-8",
         )
 
-    def plan_compaction(self, file_sizes_bytes: Dict[str, int], target_size_bytes: int = 128 * 1024 * 1024) -> List[List[str]]:
+    def plan_compaction(self, file_sizes_bytes: dict[str, int], target_size_bytes: int = 128 * 1024 * 1024) -> list[list[str]]:
         """Groups small files into compaction batches to eliminate the small-file problem in object storage."""
-        batches: List[List[str]] = []
-        current_batch: List[str] = []
+        batches: list[list[str]] = []
+        current_batch: list[str] = []
         current_size = 0
 
         for fpath, size in sorted(file_sizes_bytes.items(), key=lambda kv: kv[1]):
@@ -255,8 +255,8 @@ class LakeFSBranchManager:
     """Manages Git-like dataset branching, reproducible commits, and end-to-end data provenance."""
 
     def __init__(self) -> None:
-        self.branches: Dict[str, LakeFSBranch] = {}
-        self.commits: Dict[str, LakeFSCommit] = {}
+        self.branches: dict[str, LakeFSBranch] = {}
+        self.commits: dict[str, LakeFSCommit] = {}
         # Initial commit on main
         init_commit = LakeFSCommit(
             commit_id="0000000000000000",
@@ -280,7 +280,7 @@ class LakeFSBranchManager:
         self.branches[branch_name] = branch
         return branch
 
-    def commit(self, branch_name: str, message: str, staged_objects: Dict[str, str]) -> LakeFSCommit:
+    def commit(self, branch_name: str, message: str, staged_objects: dict[str, str]) -> LakeFSCommit:
         if branch_name not in self.branches:
             raise ValueError(f"Branch '{branch_name}' not found.")
 
@@ -301,9 +301,9 @@ class LakeFSBranchManager:
         self.branches[branch_name] = LakeFSBranch(name=branch_name, head_commit_id=cid, created_at_ms=self.branches[branch_name].created_at_ms)
         return commit
 
-    def get_lineage(self, commit_id: str) -> List[LakeFSCommit]:
+    def get_lineage(self, commit_id: str) -> list[LakeFSCommit]:
         history = []
-        curr: Optional[str] = commit_id
+        curr: str | None = commit_id
         while curr:
             if curr not in self.commits:
                 break
@@ -320,10 +320,10 @@ class GPUTrainingStreamLoader:
         self.shard_dir = pathlib.Path(shard_dir)
         self.shard_dir.mkdir(parents=True, exist_ok=True)
         self.max_samples_per_shard = max_samples_per_shard
-        self.shards: List[TrainingShard] = []
+        self.shards: list[TrainingShard] = []
 
-    def export_shards(self, samples: List[Dict[str, Any]], format_type: str = "webdataset") -> List[TrainingShard]:
-        created: List[TrainingShard] = []
+    def export_shards(self, samples: list[dict[str, Any]], format_type: str = "webdataset") -> list[TrainingShard]:
+        created: list[TrainingShard] = []
         for i in range(0, len(samples), self.max_samples_per_shard):
             chunk = samples[i : i + self.max_samples_per_shard]
             shard_id = f"shard_{len(self.shards):05d}"
@@ -345,9 +345,9 @@ class GPUTrainingStreamLoader:
             created.append(shard)
         return created
 
-    def prefetch_generator(self, shard_ids: List[str], batch_size: int = 16):
+    def prefetch_generator(self, shard_ids: list[str], batch_size: int = 16):
         """Yields streaming training batches with zero-copy chunk prefetching."""
-        buffer: List[Dict[str, Any]] = []
+        buffer: list[dict[str, Any]] = []
         for sid in shard_ids:
             match = next((s for s in self.shards if s.shard_id == sid), None)
             if not match:
@@ -373,7 +373,7 @@ class SpatialLakehouseEngine:
         self.lakefs = LakeFSBranchManager()
         self.training_loader = GPUTrainingStreamLoader(self.root / "training_shards")
 
-    def run_e2e_capture_flow(self, records: List[CaptureRecord], branch_name: str = "main") -> Dict[str, Any]:
+    def run_e2e_capture_flow(self, records: list[CaptureRecord], branch_name: str = "main") -> dict[str, Any]:
         """Runs the complete ingestion, promotion, table snapshot, and training export cycle."""
         ingest_results = []
         gold_files = []

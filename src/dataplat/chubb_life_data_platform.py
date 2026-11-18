@@ -8,14 +8,13 @@ gold-tier dimensional modeling for self-service BI, and Azure cost optimization.
 from __future__ import annotations
 
 import hashlib
-import json
-from collections import defaultdict
-from dataclasses import asdict, dataclass
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+from typing import Any, ClassVar
 
-ZERO = Decimal("0")
+ZERO = Decimal(0)
 TWO_PLACES = Decimal("0.01")
 
 
@@ -83,12 +82,12 @@ class QualityMetric:
 class ChubbDataQualityAuditor:
     """Validates raw legacy policy administration feeds before Silver ingestion."""
 
-    VALID_PRODUCTS = {"LIFE", "TRAUMA", "INCOME_PROTECTION", "TPD"}
-    VALID_STATUSES = {"ACTIVE", "CLAIM_PENDING", "LAPSED", "SURRENDERED"}
+    VALID_PRODUCTS: ClassVar[set[str]] = {"LIFE", "TRAUMA", "INCOME_PROTECTION", "TPD"}
+    VALID_STATUSES: ClassVar[set[str]] = {"ACTIVE", "CLAIM_PENDING", "LAPSED", "SURRENDERED"}
 
     @classmethod
-    def audit_policies(cls, records: Iterable[Mapping[str, Any]]) -> Tuple[List[ChubbPolicyRecord], QualityMetric]:
-        valid_list: List[ChubbPolicyRecord] = []
+    def audit_policies(cls, records: Iterable[Mapping[str, Any]]) -> tuple[list[ChubbPolicyRecord], QualityMetric]:
+        valid_list: list[ChubbPolicyRecord] = []
         seen_ids = set()
         null_count = 0
         range_count = 0
@@ -168,7 +167,7 @@ class NZIFRS17ActuarialReconciler:
         policies: Iterable[ChubbPolicyRecord],
         expected_claim_ratio: Decimal = Decimal("0.42"),
         average_duration_years: int = 10
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Calculates Present Value of Future Cash Flows (PVFCF), Risk Adjustment, and CSM."""
         active_policies = [p for p in policies if p.status == "ACTIVE"]
         total_apif = sum((p.annual_premium_nzd for p in active_policies), ZERO)
@@ -178,7 +177,7 @@ class NZIFRS17ActuarialReconciler:
         inflows = ZERO
         outflows = ZERO
         for year in range(1, average_duration_years + 1):
-            discount_factor = (Decimal("1") + cls.DISCOUNT_RATE) ** (-year)
+            discount_factor = (Decimal(1) + cls.DISCOUNT_RATE) ** (-year)
             # Annual premium collection
             inflows += total_apif * discount_factor
             # Annual expected claims and maintenance expenses
@@ -222,7 +221,7 @@ class GoldDimensionalMartGenerator:
     def generate_marts(
         policies: Iterable[ChubbPolicyRecord],
         claims: Iterable[ChubbClaimRecord]
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    ) -> dict[str, list[dict[str, Any]]]:
         dim_policies = []
         for p in policies:
             dim_policies.append({
@@ -233,7 +232,7 @@ class GoldDimensionalMartGenerator:
                 "status": p.status,
                 "sum_insured_nzd": float(p.sum_insured_nzd),
                 "annual_premium_nzd": float(p.annual_premium_nzd),
-                "monthly_premium_nzd": float((p.annual_premium_nzd / Decimal("12")).quantize(TWO_PLACES)),
+                "monthly_premium_nzd": float((p.annual_premium_nzd / Decimal(12)).quantize(TWO_PLACES)),
                 "inception_year": p.inception_date.year,
                 "underwriting_tier": p.underwriting_tier,
                 "region": p.region
@@ -251,7 +250,7 @@ class GoldDimensionalMartGenerator:
                 "reporting_lag_days": c.lag_days,
                 "amount_claimed_nzd": float(c.amount_claimed_nzd),
                 "amount_settled_nzd": float(c.amount_settled_nzd),
-                "settlement_ratio": float((c.amount_settled_nzd / max(Decimal("1"), c.amount_claimed_nzd)).quantize(TWO_PLACES)),
+                "settlement_ratio": float((c.amount_settled_nzd / max(Decimal(1), c.amount_claimed_nzd)).quantize(TWO_PLACES)),
                 "claim_status": c.claim_status
             })
 
@@ -266,9 +265,9 @@ class AzureCloudCostAndPerformanceAdvisor:
 
     @staticmethod
     def analyze_pipeline_efficiency(
-        active_clusters: List[Dict[str, Any]],
+        active_clusters: list[dict[str, Any]],
         adls_storage_gb: float
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         recommendations = []
         total_monthly_compute_est_nzd = ZERO
 
@@ -276,7 +275,7 @@ class AzureCloudCostAndPerformanceAdvisor:
             nodes = cl.get("worker_nodes", 2)
             auto_term = cl.get("auto_termination_minutes", 60)
             cost_per_hour = Decimal(str(nodes * 1.85)) # approx NZD per DBU/VM
-            total_monthly_compute_est_nzd += cost_per_hour * Decimal("160") # 160 hrs/mo
+            total_monthly_compute_est_nzd += cost_per_hour * Decimal(160) # 160 hrs/mo
 
             if auto_term > 20:
                 recommendations.append(

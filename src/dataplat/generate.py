@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +16,7 @@ EVENT_TYPES = ("created", "authorised", "captured", "refunded")
 ACCOUNT_TYPES = ("transaction", "savings", "loan")
 BANKS = ("NZ", "AU")
 TX_CATEGORIES = ("salary", "card", "transfer", "interest", "loan_repayment", "merchant")
-END = datetime(2026, 11, 4, tzinfo=timezone.utc)
+END = datetime(2026, 11, 4, tzinfo=UTC)
 
 
 def _rng(seed: int) -> np.random.Generator:

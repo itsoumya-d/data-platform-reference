@@ -7,9 +7,9 @@ multi-cloud ETL workflows (GCP BigQuery & Azure), and Responsible AI governance.
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from datetime import date
+from typing import Any, ClassVar
 
 
 @dataclass
@@ -47,7 +47,7 @@ class RetailDemandForecastingEngine:
         # Normal distribution z-score for service level
         self._z_score = 1.645 if service_level >= 0.95 else 1.28
 
-    def calculate_baseline_demand(self, history: List[StoreProductSales]) -> Tuple[float, float]:
+    def calculate_baseline_demand(self, history: list[StoreProductSales]) -> tuple[float, float]:
         """Calculates rolling mean and standard deviation from POS history."""
         if not history:
             return 0.0, 0.0
@@ -62,7 +62,7 @@ class RetailDemandForecastingEngine:
         store_id: str,
         product_sku: str,
         target_date: date,
-        history: List[StoreProductSales],
+        history: list[StoreProductSales],
         is_promo: bool = False,
         promo_multiplier: float = 1.35,
         inventory_on_hand: float = 0.0,
@@ -112,9 +112,9 @@ class CustomerProfile:
 class EverydayRewardsSegmentation:
     """Customer segmentation and personalized propensity engine."""
 
-    TIERS = ["Bronze Saver", "Silver Value", "Gold Enthusiast", "Platinum Champion"]
+    TIERS: ClassVar[list[str]] = ["Bronze Saver", "Silver Value", "Gold Enthusiast", "Platinum Champion"]
 
-    def segment_customer(self, profile: CustomerProfile) -> Dict[str, Any]:
+    def segment_customer(self, profile: CustomerProfile) -> dict[str, Any]:
         """Calculates RFM composite score and assigns loyalty tier and offer propensity."""
         # Normalize RFM components (0 to 10 scale)
         r_score = max(0.0, min(10.0, 10.0 - (profile.recency_days / 10.0)))
@@ -174,7 +174,7 @@ GROUP BY 1, 2, 3
 ORDER BY sales_date ASC;
 """.strip()
 
-    def transform_and_validate(self, raw_rows: List[Dict[str, Any]]) -> List[StoreProductSales]:
+    def transform_and_validate(self, raw_rows: list[dict[str, Any]]) -> list[StoreProductSales]:
         """Validates schemas, imputes missing values, and casts to typed domain objects."""
         validated = []
         for row in raw_rows:
@@ -211,7 +211,7 @@ class ResponsibleAIGovernance:
         base_price: float,
         discounted_price: float,
         max_discount_ratio: float = 0.40
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Audits personalized offers to ensure compliance with fair trading rules."""
         if base_price <= 0:
             return {"fair": False, "reason": "Base price must be positive"}
