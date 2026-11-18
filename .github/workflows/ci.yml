@@ -19,9 +19,32 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: python -m pip install --upgrade pip
+      - run: python -m pip install --upgrade pip ruff
+      - run: ruff check .
       - run: pip install -e ".[dev]"
       - run: pytest -m "not spark and not airflow and not integration"
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t dataplat:ci .
+      - run: docker run -d --name app -p 8000:8000 --env-file .env.example dataplat:ci
+      - run: chmod +x scripts/smoke.sh && ./scripts/smoke.sh http://localhost:8000
+
+  survive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: docker build -t dataplat:ci . && docker run -d --name app -p 8000:8000 --env-file .env.example dataplat:ci
+      - run: docker run --rm --network host -i grafana/k6 run - < load/smoke.js || true
+      - run: python -m pip install pip-audit && pip-audit
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   dbt:
     runs-on: ubuntu-latest
