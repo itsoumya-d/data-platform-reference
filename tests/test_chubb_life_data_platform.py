@@ -2,16 +2,15 @@
 
 from datetime import date
 from decimal import Decimal
-import pytest
 
 from dataplat.chubb_life_data_platform import (
-    ChubbPolicyRecord,
+    AzureCloudCostAndPerformanceAdvisor,
     ChubbClaimRecord,
     ChubbDataQualityAuditor,
-    NZIFRS17ActuarialReconciler,
+    ChubbPolicyRecord,
     GoldDimensionalMartGenerator,
-    AzureCloudCostAndPerformanceAdvisor,
-    sha256_digest
+    NZIFRS17ActuarialReconciler,
+    sha256_digest,
 )
 
 
@@ -105,8 +104,8 @@ def test_nz_ifrs17_profitable_cohort_evaluation():
             policyholder_id=f"CUST-{i}",
             product_type="LIFE",
             status="ACTIVE",
-            sum_insured_nzd=Decimal("500000"),
-            annual_premium_nzd=Decimal("1500"),
+            sum_insured_nzd=Decimal(500000),
+            annual_premium_nzd=Decimal(1500),
             inception_date=date(2024, 1, 1),
             underwriting_tier="STANDARD"
         )
@@ -133,8 +132,8 @@ def test_nz_ifrs17_onerous_cohort_evaluation():
             policyholder_id="CUST-HIGH-RISK",
             product_type="TRAUMA",
             status="ACTIVE",
-            sum_insured_nzd=Decimal("1000000"),
-            annual_premium_nzd=Decimal("800"), # underpriced premium
+            sum_insured_nzd=Decimal(1000000),
+            annual_premium_nzd=Decimal(800), # underpriced premium
             inception_date=date(2024, 1, 1),
             underwriting_tier="SUBSTANDARD"
         )
@@ -158,8 +157,8 @@ def test_gold_dimensional_mart_generation():
             policyholder_id="CUST-G01",
             product_type="LIFE",
             status="ACTIVE",
-            sum_insured_nzd=Decimal("600000"),
-            annual_premium_nzd=Decimal("1800"),
+            sum_insured_nzd=Decimal(600000),
+            annual_premium_nzd=Decimal(1800),
             inception_date=date(2023, 3, 1),
             underwriting_tier="PREFERRED",
             region="Wellington"
@@ -172,8 +171,8 @@ def test_gold_dimensional_mart_generation():
             event_date=date(2026, 1, 15),
             reported_date=date(2026, 1, 25),
             claim_type="LIFE",
-            amount_claimed_nzd=Decimal("600000"),
-            amount_settled_nzd=Decimal("600000"),
+            amount_claimed_nzd=Decimal(600000),
+            amount_settled_nzd=Decimal(600000),
             claim_status="PAID"
         )
     ]

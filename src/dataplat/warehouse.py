@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable
 from contextlib import closing
 from pathlib import Path
-from typing import Any, Iterable, Protocol
+from typing import Any, Protocol
 
 MERGE_ORDERS = """
 MERGE INTO RAW.ORDERS AS target
@@ -67,7 +68,7 @@ class SnowflakeWarehouse:
         self._connection = connection
 
     @classmethod
-    def from_env(cls) -> "SnowflakeWarehouse":
+    def from_env(cls) -> SnowflakeWarehouse:
         import snowflake.connector
 
         required = ("SNOWFLAKE_ACCOUNT", "SNOWFLAKE_USER", "SNOWFLAKE_PASSWORD")

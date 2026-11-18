@@ -9,12 +9,12 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation
-from typing import Iterable, Mapping
 
-ZERO = Decimal("0")
+ZERO = Decimal(0)
 
 
 def _digest(*parts: str) -> str:

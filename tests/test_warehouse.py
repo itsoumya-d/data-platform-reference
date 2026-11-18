@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from dataplat.warehouse import DuckDBWarehouse, SnowflakeWarehouse
 
@@ -33,7 +33,7 @@ def row():
     return {
         "order_id": "O0000001",
         "customer_id": "C00001",
-        "order_ts": datetime(2026, 11, 1, tzinfo=timezone.utc),
+        "order_ts": datetime(2026, 11, 1, tzinfo=UTC),
         "region": "Auckland",
         "amount_nzd": 120.50,
         "status": "paid",

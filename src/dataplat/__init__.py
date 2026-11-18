@@ -1,3 +1,3 @@
 """Reference data-platform building blocks."""
 
-__all__ = ["generate", "warehouse", "kafka_bus", "ai_service", "api"]
+__all__ = ["ai_service", "api", "generate", "kafka_bus", "warehouse"]

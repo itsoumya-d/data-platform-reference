@@ -1,6 +1,7 @@
 """Unit tests for Bank of New Zealand (BNZ) Core Banking Data Lifecycle Engine."""
 
 import pytest
+
 from dataplat.bnz_lifecycle import (
     BNZDataLifecycleManager,
     ChangeSeverity,
@@ -9,10 +10,8 @@ from dataplat.bnz_lifecycle import (
     LifecycleStage,
     LineageNode,
     ReconciliationRootCauseAnalyzer,
-    SchemaChange,
     SchemaDriftDetector,
     SchemaSnapshot,
-    SourceToTargetMapping,
 )
 
 

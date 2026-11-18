@@ -7,13 +7,13 @@ reconciliation and lineage testable outside Databricks.
 from __future__ import annotations
 
 from collections import defaultdict
-from decimal import Decimal, ROUND_HALF_UP
-from typing import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from decimal import ROUND_HALF_UP, Decimal
 
 MONEY = Decimal("0.01")
 
 
-def money(value: Decimal | int | float | str) -> Decimal:
+def money(value: Decimal | float | str) -> Decimal:
     return Decimal(str(value)).quantize(MONEY, rounding=ROUND_HALF_UP)
 
 
@@ -78,7 +78,7 @@ def build_invoice_fact(rows: Iterable[Mapping[str, object]]) -> list[dict[str, o
     return sorted(fact, key=lambda item: str(item["invoice_id"]))
 
 
-def reconcile(gl_total: Decimal | str | int | float, subledger_total: Decimal | str | int | float, tolerance: Decimal | str | int | float = "0.01") -> dict[str, object]:
+def reconcile(gl_total: Decimal | str | float, subledger_total: Decimal | str | float, tolerance: Decimal | str | float = "0.01") -> dict[str, object]:
     gl = money(gl_total)
     subledger = money(subledger_total)
     difference = money(gl - subledger)
@@ -131,7 +131,7 @@ def lineage_edges() -> list[tuple[str, str]]:
 
 
 def finance_metrics(rows: Sequence[Mapping[str, object]]) -> dict[str, Decimal]:
-    totals: dict[str, Decimal] = defaultdict(lambda: Decimal("0"))
+    totals: dict[str, Decimal] = defaultdict(lambda: Decimal(0))
     for row in rows:
         amount = money(row.get("amount") or 0)
         tax = money(row.get("tax") or 0)

@@ -47,11 +47,11 @@ def test_hashdiff_changes_with_value():
 
 
 def test_daily_net_flow_credit():
-    assert daily_net_flow([tx(100, "credit")])[(date(2026, 11, 5), "A1")] == Decimal("100")
+    assert daily_net_flow([tx(100, "credit")])[(date(2026, 11, 5), "A1")] == Decimal(100)
 
 
 def test_daily_net_flow_debit():
-    assert daily_net_flow([tx(40, "debit")])[(date(2026, 11, 5), "A1")] == Decimal("-40")
+    assert daily_net_flow([tx(40, "debit")])[(date(2026, 11, 5), "A1")] == Decimal(-40)
 
 
 def test_daily_net_flow_skips_pending():
@@ -60,8 +60,8 @@ def test_daily_net_flow_skips_pending():
 
 def test_daily_net_flow_groups_accounts():
     flows = daily_net_flow([tx(100, "credit", account="A1"), tx(25, "debit", account="A2")])
-    assert flows[(date(2026, 11, 5), "A1")] == Decimal("100")
-    assert flows[(date(2026, 11, 5), "A2")] == Decimal("-25")
+    assert flows[(date(2026, 11, 5), "A1")] == Decimal(100)
+    assert flows[(date(2026, 11, 5), "A2")] == Decimal(-25)
 
 
 def test_net_interest_margin():

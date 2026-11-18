@@ -1,5 +1,10 @@
 import pytest
-from dataplat.spatial_lakehouse import CaptureRecord, MultimodalIngestPipeline, LakeFSBranchManager
+
+from dataplat.spatial_lakehouse import (
+    CaptureRecord,
+    LakeFSBranchManager,
+    MultimodalIngestPipeline,
+)
 
 
 def test_corrupted_payload_graceful_degradation(tmp_path):
