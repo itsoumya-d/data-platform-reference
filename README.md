@@ -110,6 +110,14 @@ The repo also includes a Databricks-shaped finance data-product slice:
 The slice is validated by pytest; Databricks SQL and PySpark remain portable
 contracts rather than a live workspace connection.
 
+### Automated Streaming Data Quality & Observability Engine
+
+- `src/dataplat/data_quality.py` — Production-grade automated data quality gates and observability:
+  - `StreamingQualityGate`: Real-time event envelope contract enforcement, schema validation, SLA-based freshness verification, and automated dead-letter quarantining.
+  - `ObservabilityEngine`: Multi-dimensional dataset evaluation (completeness, validity bounds, uniqueness, regex formatting, and categorical integrity) generating composite Data Health Index metrics.
+  - `DriftAnomalyMonitor`: Statistical z-score anomaly detector for monitoring streaming metric drift and distribution shifts before downstream consumption.
+- `tests/test_data_quality.py` — 9 unit tests verifying envelope validation, quarantine routing, multi-rule evaluation suites, and drift anomaly detection.
+
 ### Woolworths Group New Zealand (wiqNZ) Retail Data Science Engine
 
 - `src/dataplat/woolworths_retail_ds.py` — Production-grade retail data science engine:
