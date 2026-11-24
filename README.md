@@ -126,6 +126,8 @@ contracts rather than a live workspace connection.
   - `MultiCloudRetailETLPipeline`: Python and SQL extraction/transformation pipelines across Google Cloud Platform (BigQuery) and Microsoft Azure.
   - `ResponsibleAIGovernance`: PII masking with SHA-256 salting and pricing fairness audit safeguards.
 - `tests/test_woolworths_retail_ds.py` — 10 unit tests verifying demand forecasting, promotional lift, shrinkage detection, customer segmentation, multi-cloud SQL generation, and AI ethics.
+- `src/dataplat/banking_reconciliation.py` — Banking transaction ledger reconciliation pipeline with double-entry integrity audits, cryptographic hash verification, idempotency checking, settlement timing skew detection, and sliding-window SLA monitoring.
+- `tests/test_banking_reconciliation.py` — 9 unit tests verifying double-entry balance gates, idempotency collision guards, timing skew tolerance, and streaming anomaly alerting.
 
 ## Boundaries
 
