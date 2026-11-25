@@ -26,7 +26,7 @@ dbt = ["dbt-duckdb>=1.8"]
 spark = ["pyspark>=4.3.0,<5"]
 kafka = ["confluent-kafka>=2.16.1"]
 snowflake = ["snowflake-connector-python>=5.2.0"]
-airflow = ["apache-airflow>=2.10,<2.11"]
+airflow = ["apache-airflow>=3.4.0,<3.5"]
 
 [project.scripts]
 dataplat-generate = "dataplat.generate:main"
